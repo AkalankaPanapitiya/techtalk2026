@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multimedia TechTalk 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@300;600;800;900&family=Manrope:wght@400;600;700&display=swap">
+<style>
+/* Layout: one stage screen. A ring of 5 lamps around the event name; every phone shares the same ring live; the 5th lamp opens the finale on every screen. */
+:root{
+  --night:#07060c;
+  --night-2:#13101d;
+  --ember:#ffb03a;
+  --flame:#ffd98a;
+  --glow:#fff6e3;
+  --violet:#8b6cff;
+  --muted:#8f86a6;
+  --line:#2a2440;
+  --ok:#5fd39a;
+  --bad:#ff7a6b;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Manrope","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{
+  background:var(--night);color:var(--glow);font-family:var(--body);
+  overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+}
+.stage{
+  position:relative;height:100%;display:grid;grid-template-rows:auto 1fr auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:clamp(14px,3vh,32px);
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 46%, rgba(139,108,255,.13), transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,176,58,.08), transparent 70%),
+    var(--night);
+}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.eyebrow{font-size:clamp(11px,1.4vw,14px);letter-spacing:.32em;text-transform:uppercase;color:var(--ember);font-weight:700}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tool{
+  font:600 12px/1 var(--body);letter-spacing:.06em;color:var(--muted);background:transparent;
+  border:1px solid var(--line);border-radius:999px;padding:9px 14px;cursor:pointer;
+}
+.tool:hover{color:var(--glow);border-color:var(--muted)}
+.tool:focus-visible,.light-btn:focus-visible,.confirm button:focus-visible{outline:2px solid var(--flame);outline-offset:3px}
+.status{display:inline-flex;align-items:center;gap:7px;font:600 12px/1 var(--body);color:var(--muted);padding:9px 4px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status.live i{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.status.down i{background:var(--bad)}
+
+/* ring */
+.ring-wrap{position:relative;display:grid;place-items:center;min-height:0}
+.ring{position:relative;width:min(78vmin,620px);aspect-ratio:1;max-width:100%;max-height:100%}
+.ring svg.track{position:absolute;inset:0;width:100%;height:100%}
+.ring .track circle{fill:none;stroke:var(--line);stroke-width:1}
+.ring .track .progress{stroke:var(--ember);stroke-width:2;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 6px var(--ember))}
+.lamp{
+  position:absolute;width:17%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  display:grid;place-items:center;font:800 clamp(18px,4.4vmin,36px)/1 var(--display);color:var(--muted);
+  background:var(--night-2);border:1px solid var(--line);transition:all .8s ease;
+}
+.lamp.lit{
+  color:var(--night);border-color:var(--flame);
+  background:radial-gradient(circle at 50% 40%, var(--glow) 0%, var(--flame) 35%, var(--ember) 70%);
+  box-shadow:0 0 18px 4px rgba(255,176,58,.7),0 0 60px 14px rgba(255,176,58,.25);
+  animation:flicker 3.2s ease-in-out infinite;
+}
+.lamp.mine{outline:3px solid var(--glow);outline-offset:5px}
+.lamp.next{border-color:var(--ember);color:var(--ember);animation:beckon 1.6s ease-in-out infinite}
+@keyframes flicker{0%,100%{filter:brightness(1)}45%{filter:brightness(1.12)}55%{filter:brightness(.94)}}
+@keyframes beckon{0%,100%{box-shadow:0 0 0 0 rgba(255,176,58,.5)}50%{box-shadow:0 0 0 10px rgba(255,176,58,0)}}
+.core{position:absolute;inset:22%;display:grid;place-items:center;text-align:center;align-content:center;gap:.4em}
+.core .kicker{font-size:clamp(10px,1.6vmin,14px);letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+.core h1{
+  margin:0;font:900 clamp(28px,8vmin,70px)/.9 var(--display);text-transform:uppercase;letter-spacing:.01em;text-wrap:balance;
+  color:transparent;-webkit-text-stroke:1px rgba(255,246,227,.35);transition:color 1s,text-shadow 1s;
+}
+.core h1 .yr{display:block;font-weight:300;letter-spacing:.2em;font-size:.62em;margin-top:.15em}
+.core .count{font:600 clamp(12px,2vmin,16px)/1 var(--body);color:var(--ember);font-variant-numeric:tabular-nums}
+
+/* controls */
+footer{display:grid;justify-items:center;gap:10px;padding-top:8px}
+.prompt{font-size:clamp(15px,2.4vmin,20px);color:var(--glow);text-align:center;min-height:1.4em;text-wrap:balance}
+.prompt b{color:var(--ember);font-weight:700}
+.prompt.err{color:var(--bad)}
+.light-btn{
+  position:relative;width:clamp(140px,22vmin,210px);aspect-ratio:1;border-radius:50%;cursor:pointer;border:0;
+  background:radial-gradient(circle at 50% 35%, #ffe7b0 0%, var(--ember) 45%, #c4610f 100%);
+  color:var(--night);font:900 clamp(20px,3.4vmin,30px)/1 var(--display);text-transform:uppercase;letter-spacing:.06em;
+  box-shadow:0 0 0 8px rgba(255,176,58,.12),0 0 50px rgba(255,176,58,.45),inset 0 -8px 20px rgba(120,40,0,.35);
+  transition:transform .15s, filter .3s, opacity .3s;
+}
+.light-btn::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:2px solid rgba(255,176,58,.5);animation:ripple 2s ease-out infinite}
+@keyframes ripple{from{transform:scale(.9);opacity:1}to{transform:scale(1.25);opacity:0}}
+.light-btn:active{transform:scale(.95)}
+.light-btn:disabled{filter:grayscale(.8) brightness(.5);cursor:default}
+.light-btn:disabled::after{animation:none;opacity:0}
+.light-btn small{display:block;font:700 .48em/1 var(--body);letter-spacing:.2em;margin-top:.5em;opacity:.75}
+.org{font-size:clamp(10px,1.3vmin,12px);color:var(--muted);letter-spacing:.08em;text-align:center}
+
+/* ignite overlay */
+.overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;text-align:center;pointer-events:none;opacity:0}
+.overlay.show{pointer-events:auto}
+#ignite{background:radial-gradient(circle at 50% 50%, rgba(255,246,227,1) 0%, rgba(255,176,58,.95) 22%, rgba(196,97,15,.7) 48%, rgba(7,6,12,.97) 80%)}
+#ignite.show{animation:igniteIn 3.2s ease forwards}
+@keyframes igniteIn{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}
+#ignite .burst{position:absolute;width:20vmin;aspect-ratio:1;border-radius:50%;background:var(--glow);box-shadow:0 0 120px 60px var(--flame)}
+#ignite.show .burst{animation:burst 1.4s cubic-bezier(.1,.8,.2,1) forwards}
+@keyframes burst{from{transform:scale(0);opacity:1}to{transform:scale(9);opacity:0}}
+#ignite .msg{position:relative;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+#ignite .num{font:900 clamp(140px,42vmin,380px)/.85 var(--display);color:var(--night);text-shadow:0 0 40px rgba(255,246,227,.8)}
+#ignite .line1{font:800 clamp(22px,5vmin,46px)/1.1 var(--display);text-transform:uppercase;color:var(--night);letter-spacing:.04em}
+#ignite .line2{font:600 clamp(14px,2.4vmin,20px)/1.4 var(--body);color:#3a1d05;margin-top:.6em}
+#ignite.show .msg{animation:rise 3.2s ease forwards}
+@keyframes rise{0%{transform:scale(.6);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(1.04);opacity:0}}
+
+/* finale */
+#finale{background:var(--night);opacity:0;transition:opacity 1.4s ease}
+#finale.show{opacity:1}
+#finale canvas{position:absolute;inset:0;width:100%;height:100%}
+#finale .card{position:relative;display:grid;justify-items:center;gap:clamp(10px,2.4vh,26px);padding-inline:max(16px,env(safe-area-inset-left,0px))}
+#finale .tag{font:700 clamp(12px,2vmin,18px)/1 var(--body);letter-spacing:.5em;text-transform:uppercase;color:var(--ember);opacity:0}
+#finale h2{margin:0;font:900 clamp(52px,14vmin,170px)/.86 var(--display);text-transform:uppercase;letter-spacing:.005em;text-wrap:balance}
+#finale h2 .w{display:inline-block;opacity:0;transform:translateY(30px);filter:blur(10px)}
+#finale h2 .shine{
+  background:linear-gradient(100deg,var(--ember) 0%,var(--flame) 30%,var(--glow) 45%,var(--flame) 55%,var(--ember) 75%,var(--violet) 100%);
+  background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 22px rgba(255,176,58,.55));
+}
+#finale.show h2 .shine{animation:wordIn 1.1s cubic-bezier(.2,.8,.2,1) forwards, sheen 5s linear 2.4s infinite}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-130% 0}}
+#finale h2 .year{display:block;font-weight:300;letter-spacing:.32em;font-size:.5em;margin-top:.12em;color:var(--glow);text-shadow:0 0 30px rgba(255,217,138,.6)}
+#finale .rule{width:0;height:2px;background:linear-gradient(90deg,transparent,var(--ember),transparent)}
+#finale .credits{display:grid;gap:.35em;font:600 clamp(13px,2.1vmin,20px)/1.3 var(--body);color:var(--glow);opacity:0}
+#finale .credits .by{font-size:.75em;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+#finale .credits .uni{color:var(--flame);font-weight:700}
+#finale.show .tag{animation:fade 1s ease .6s forwards}
+#finale.show h2 .year{animation:wordIn 1.1s cubic-bezier(.2,.8,.2,1) 1.7s forwards}
+#finale.show .rule{animation:grow 1.4s ease 2.2s forwards}
+#finale.show .credits{animation:fade 1.2s ease 2.8s forwards}
+@keyframes fade{to{opacity:1}}
+@keyframes wordIn{to{opacity:1;transform:none;filter:none}}
+@keyframes grow{to{width:min(60vw,560px)}}
+#finale .back{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));right:max(16px,env(safe-area-inset-right,0px));opacity:.35}
+#finale .back:hover{opacity:1}
+
+/* in-page confirm */
+.confirm{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(7,6,12,.8);padding-inline:16px}
+.confirm div{background:var(--night-2);border:1px solid var(--line);border-radius:14px;padding:24px;max-width:340px;display:grid;gap:16px;text-align:center}
+.confirm p{margin:0;font-size:16px;line-height:1.5}
+.confirm .row{display:flex;gap:10px;justify-content:center}
+.confirm button{font:700 14px var(--body);padding:10px 18px;border-radius:999px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--glow)}
+.confirm button.go{background:var(--ember);color:var(--night);border-color:var(--ember)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.2s!important}
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <header>
+    <span class="eyebrow">Industry Spotlight</span>
+    <div class="tools">
+      <span class="status" id="status"><i></i><span id="statusText">Connecting</span></span>
+      <button class="tool" id="soundBtn" type="button" aria-pressed="true">Sound on</button>
+      <button class="tool" id="fsBtn" type="button">Full screen</button>
+      <button class="tool" id="resetBtn" type="button" hidden>Reset all</button>
+    </div>
+  </header>
+
+  <div class="ring-wrap">
+    <div class="ring" id="ring">
+      <svg class="track" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="40"></circle>
+        <circle class="progress" id="progress" cx="50" cy="50" r="40" transform="rotate(-90 50 50)"></circle>
+      </svg>
+      <div class="core">
+        <span class="kicker">Industry Spotlight</span>
+        <h1 id="coreTitle">Multimedia TechTalk<span class="yr">2026</span></h1>
+        <span class="count" id="count">0 of 5 lamps lit</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="prompt" id="prompt">Connecting to the ceremony…</div>
+    <button class="light-btn" id="lightBtn" type="button" disabled>Light<small>Wait</small></button>
+    <div class="org">Organised by the Multimedia Specialisation · Department of ICT · Faculty of Technology · University of Sri Jayewardenepura</div>
+  </footer>
+</div>
+
+<div class="overlay" id="ignite" aria-live="polite">
+  <div class="burst"></div>
+  <div class="msg">
+    <div class="num" id="igNum">1</div>
+    <div class="line1" id="igLine1">Lamp one is lit</div>
+    <div class="line2" id="igLine2"></div>
+  </div>
+</div>
+
+<div class="overlay" id="finale">
+  <canvas id="sparks"></canvas>
+  <div class="card">
+    <div class="tag">Industry Spotlight</div>
+    <h2><span class="w shine" style="animation-delay:.9s,2.4s">Multimedia</span> <span class="w shine" style="animation-delay:1.25s,2.4s">TechTalk</span><span class="w year">2026</span></h2>
+    <div class="rule"></div>
+    <div class="credits">
+      <span class="by">Organised by</span>
+      <span>Multimedia Specialisation</span>
+      <span>Department of ICT · Faculty of Technology</span>
+      <span class="uni">University of Sri Jayewardenepura</span>
+    </div>
+  </div>
+  <button class="tool back" id="backBtn" type="button">Back to lamps</button>
+</div>
+
+<div class="confirm" id="confirm" hidden>
+  <div>
+    <p>Start the ceremony again? All 5 lamps will switch off on every phone.</p>
+    <div class="row"><button type="button" id="cancelReset">Keep lamps</button><button type="button" class="go" id="doReset">Reset all</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ---------- settings ---------- */
+  const TOTAL = 5;
+  const WORDS = ["one","two","three","four","five"];
+  const ORD = ["first","second","third","fourth","fifth"];
+  const params = new URLSearchParams(location.search);
+  const IS_HOST = params.has("host");                 // ?host  → can reset and can light more than once
+  const ROOM = (params.get("room") || "live").replace(/[^a-z0-9_-]/gi,"").slice(0,24) || "live";
+  const TOPIC = "usjmm-techtalk26-q7v3k9x2-" + ROOM;  // shared channel all phones join
+  const RELAY = "https://ntfy.sh/" + TOPIC;
+
+  const $ = id => document.getElementById(id);
+  const ring = $("ring"), btn = $("lightBtn"), promptEl = $("prompt"), count = $("count");
+  const progress = $("progress"), ignite = $("ignite"), finale = $("finale");
+  const C = 2*Math.PI*40;
+  progress.style.strokeDasharray = C;
+  if (IS_HOST) $("resetBtn").hidden = false;
+
+  /* this phone's id, kept across refreshes */
+  let me;
+  try { me = localStorage.getItem("tt26-device"); } catch(e){}
+  if (!me){ me = Math.random().toString(36).slice(2,10); try{ localStorage.setItem("tt26-device", me); }catch(e){} }
+
+  /* ---------- shared state ---------- */
+  const seen = new Set();   // message ids already applied
+  const log = [];           // events in server order
+  let lamps = [];           // device id for each lit lamp
+  let ready = false, busy = false, sending = false, sound = true, lastId = "all";
+
+  function recompute(){
+    let list = [];
+    for (const ev of log){
+      if (ev.t === "reset") list = [];
+      else if (ev.t === "light" && list.length < TOTAL){
+        if (ev.h || !list.includes(ev.d)) list.push(ev.d);
+      }
+    }
+    return list;
+  }
+  function addEvent(m){
+    if (!m || m.event !== "message" || seen.has(m.id)) return false;
+    seen.add(m.id); lastId = m.id;
+    try { const ev = JSON.parse(m.message); if (ev && ev.t) log.push(ev); } catch(e){}
+    return true;
+  }
+  function apply(animate){
+    const prev = lamps.length, next = recompute();
+    lamps = next;
+    if (animate && next.length > prev){
+      playIgnite(next.length, next[next.length-1] === me);
+      if (next.length >= TOTAL) setTimeout(showFinale, 3200);
+    } else if (next.length >= TOTAL && !finale.classList.contains("show") && !animate){
+      showFinale(true);
+    }
+    if (next.length < TOTAL && finale.classList.contains("show")) hideFinale();
+    render();
+  }
+
+  /* ---------- drawing ---------- */
+  const lampEls = [];
+  for (let i=0;i<TOTAL;i++){
+    const a = -Math.PI/2 + i*(2*Math.PI/TOTAL);
+    const el = document.createElement("div");
+    el.className = "lamp"; el.textContent = i+1;
+    el.style.left = (50 + 40*Math.cos(a)) + "%";
+    el.style.top  = (50 + 40*Math.sin(a)) + "%";
+    ring.appendChild(el); lampEls.push(el);
+  }
+  const myLamp = () => lamps.indexOf(me) + 1;
+
+  function render(){
+    const lit = lamps.length, mine = IS_HOST ? 0 : myLamp();
+    lampEls.forEach((l,i)=>{
+      l.classList.toggle("lit", i<lit);
+      l.classList.toggle("next", i===lit && ready);
+      l.classList.toggle("mine", mine === i+1);
+    });
+    progress.style.strokeDashoffset = C*(1 - lit/TOTAL);
+    count.textContent = lit + " of " + TOTAL + " lamps lit";
+    const t = $("coreTitle");
+    t.style.color = lit ? "rgba(255,217,138," + (0.15 + 0.85*lit/TOTAL) + ")" : "transparent";
+    t.style.textShadow = lit ? "0 0 " + (lit*6) + "px rgba(255,176,58," + (lit/TOTAL*0.7) + ")" : "none";
+    promptEl.classList.remove("err");
+
+    if (!ready){ promptEl.textContent = "Connecting to the ceremony…"; setBtn("Light","Wait",true); return; }
+    if (lit >= TOTAL){ promptEl.textContent = "All five lamps are lit"; setBtn("Lit","Complete",true); return; }
+    if (mine){
+      promptEl.innerHTML = "You lit lamp <b>" + mine + "</b>. Thank you. Watch the others light up.";
+      setBtn("Lit","Lamp " + mine,true); return;
+    }
+    if (sending){ promptEl.textContent = "Lighting…"; setBtn("Light","Sending",true); return; }
+    promptEl.innerHTML = "Honoured guest, please tap to light the <b>" + ORD[lit] + "</b> lamp";
+    setBtn("Light","Lamp " + (lit+1), busy);
+  }
+  function setBtn(main, sub, dis){ btn.innerHTML = main + "<small>" + sub + "</small>"; btn.disabled = dis; }
+
+  /* ---------- sound ---------- */
+  let ctx;
+  function chime(final){
+    if (!sound) return;
+    try{
+      ctx = ctx || new (window.AudioContext||window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+      const n = lamps.length;
+      const notes = final ? [523.25,659.25,783.99,1046.5,1318.5] : [659.25 + n*40, 987.77 + n*50];
+      notes.forEach((f,i)=>{
+        const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + i*(final?0.16:0.09);
+        o.type = "sine"; o.frequency.value = f;
+        g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(final?0.22:0.18,t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+(final?3.2:1.8));
+        o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+3.4);
+      });
+    }catch(e){}
+  }
+
+  /* ---------- full-screen moments ---------- */
+  function playIgnite(n, byMe){
+    busy = true;
+    chime(false);
+    $("igNum").textContent = n;
+    $("igLine1").textContent = "Lamp " + WORDS[n-1] + " is lit";
+    $("igLine2").textContent = byMe ? "Thank you for lighting the " + ORD[n-1] + " lamp." :
+      (n < TOTAL ? "Lit by an honoured guest." : "The stage is ready.");
+    ignite.classList.remove("show"); void ignite.offsetWidth; ignite.classList.add("show");
+    setTimeout(()=>{ ignite.classList.remove("show"); busy = false; render(); }, 3200);
+  }
+
+  const cv = $("sparks"), g2 = cv.getContext("2d");
+  let parts = [], raf = 0;
+  function sizeCanvas(){ const d = Math.min(2, window.devicePixelRatio||1); cv.width = innerWidth*d; cv.height = innerHeight*d; g2.setTransform(d,0,0,d,0,0); }
+  function spawn(n, burst){
+    for (let i=0;i<n;i++){
+      const ang = Math.random()*Math.PI*2, sp = burst ? 2+Math.random()*7 : 0.3+Math.random()*1.2;
+      parts.push({
+        x: burst ? innerWidth/2 : Math.random()*innerWidth, y: burst ? innerHeight/2 : innerHeight + 10,
+        vx: burst ? Math.cos(ang)*sp : (Math.random()-.5)*0.4, vy: burst ? Math.sin(ang)*sp : -sp,
+        life: 1, decay: burst ? 0.006+Math.random()*0.01 : 0.003+Math.random()*0.004,
+        r: 0.8+Math.random()*2.2, hue: Math.random()<0.8 ? 38+Math.random()*12 : 255
+      });
+    }
+  }
+  function tick(){
+    g2.fillStyle = "rgba(7,6,12,0.22)"; g2.fillRect(0,0,innerWidth,innerHeight);
+    if (parts.length < 260) spawn(3,false);
+    g2.globalCompositeOperation = "lighter";
+    parts = parts.filter(p=>{
+      p.x += p.vx; p.y += p.vy; p.vx *= 0.985; p.vy *= 0.985; p.life -= p.decay;
+      if (p.life <= 0) return false;
+      g2.beginPath(); g2.fillStyle = "hsla(" + p.hue + ",100%," + (p.hue>200?72:68) + "%," + p.life + ")";
+      g2.arc(p.x,p.y,p.r,0,Math.PI*2); g2.fill(); return true;
+    });
+    g2.globalCompositeOperation = "source-over";
+    raf = requestAnimationFrame(tick);
+  }
+  function showFinale(quiet){
+    if (lamps.length < TOTAL) return;
+    finale.classList.add("show");
+    sizeCanvas(); g2.fillStyle = "#07060c"; g2.fillRect(0,0,innerWidth,innerHeight);
+    parts = []; spawn(quiet ? 60 : 320, !quiet);
+    cancelAnimationFrame(raf);
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) tick();
+    if (!quiet) setTimeout(()=>chime(true), 700);
+  }
+  function hideFinale(){ finale.classList.remove("show"); cancelAnimationFrame(raf); }
+  addEventListener("resize", ()=>{ if (finale.classList.contains("show")) sizeCanvas(); });
+
+  /* ---------- live connection (ntfy.sh relay) ---------- */
+  const statusEl = $("status"), statusText = $("statusText");
+  function setStatus(s){
+    statusEl.classList.toggle("live", s==="live"); statusEl.classList.toggle("down", s==="down");
+    statusText.textContent = s==="live" ? "Live" : s==="down" ? "Reconnecting" : "Connecting";
+  }
+
+  async function loadHistory(){
+    const r = await fetch(RELAY + "/json?poll=1&since=all", {cache:"no-store"});
+    if (!r.ok) throw new Error(r.status);
+    const text = await r.text();
+    text.split("\n").forEach(line=>{ if (line.trim()){ try{ addEvent(JSON.parse(line)); }catch(e){} } });
+  }
+
+  let es, retry = 2000;
+  function listen(){
+    try{ if (es) es.close(); }catch(e){}
+    es = new EventSource(RELAY + "/sse?since=" + encodeURIComponent(lastId));
+    es.onopen = ()=>{ setStatus("live"); retry = 2000; };
+    es.onmessage = e=>{
+      let m; try{ m = JSON.parse(e.data); }catch(err){ return; }
+      if (m.event === "open" || m.event === "keepalive"){ setStatus("live"); return; }
+      if (addEvent(m)) apply(ready);
+    };
+    es.onerror = ()=>{
+      setStatus("down");
+      if (es.readyState === 2){ setTimeout(resync, retry); retry = Math.min(retry*2, 20000); }
+    };
+  }
+  async function resync(){
+    try{ await loadHistory(); apply(ready); }catch(e){}
+    listen();
+  }
+  async function start(){
+    try{ await loadHistory(); }catch(e){ setStatus("down"); }
+    ready = true; apply(false); listen();
+  }
+
+  async function send(ev){
+    const r = await fetch(RELAY, { method:"POST", body: JSON.stringify(ev) });
+    if (!r.ok) throw new Error(r.status);
+  }
+
+  async function light(){
+    if (!ready || busy || sending || lamps.length >= TOTAL) return;
+    if (!IS_HOST && myLamp()) return;
+    sending = true; render();
+    try{ ctx = ctx || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+    try{
+      await send(IS_HOST ? {t:"light", d:me, h:1} : {t:"light", d:me});
+      sending = false; render();
+    }catch(e){
+      sending = false; render();
+      promptEl.textContent = "Couldn't reach the ceremony. Check the internet connection and tap again.";
+      promptEl.classList.add("err");
+    }
+  }
+
+  /* ---------- controls ---------- */
+  btn.addEventListener("click", light);
+  addEventListener("keydown", e=>{
+    if (e.key==="Escape") $("confirm").hidden = true;
+    if (!$("confirm").hidden) return;
+    if ((e.key===" "||e.key==="Enter") && document.activeElement===document.body){ e.preventDefault(); light(); }
+  });
+  $("soundBtn").addEventListener("click", e=>{
+    sound = !sound; e.currentTarget.textContent = sound ? "Sound on" : "Sound off";
+    e.currentTarget.setAttribute("aria-pressed", sound);
+  });
+  $("fsBtn").addEventListener("click", async ()=>{
+    try{
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen).call(document.documentElement);
+    }catch(e){}
+  });
+  $("resetBtn").addEventListener("click", ()=>{ $("confirm").hidden = false; });
+  $("cancelReset").addEventListener("click", ()=>{ $("confirm").hidden = true; });
+  $("doReset").addEventListener("click", async ()=>{
+    $("confirm").hidden = true;
+    try{ await send({t:"reset", d:me}); }catch(e){ promptEl.textContent = "Reset didn't reach the server. Try again."; promptEl.classList.add("err"); }
+  });
+  $("backBtn").addEventListener("click", hideFinale);
+
+  async function wake(){ try{ if ("wakeLock" in navigator) await navigator.wakeLock.request("screen"); }catch(e){} }
+  wake();
+  document.addEventListener("visibilitychange", ()=>{ if (!document.hidden){ wake(); resync(); } });
+
+  render();
+  start();
+})();
+</script>
+
+</body>
+</html>
